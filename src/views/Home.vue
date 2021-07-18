@@ -19,7 +19,7 @@
       <el-divider direction="horizontal"></el-divider>
     </el-row>
 
-    <h1>This is the home page</h1>
+    <!-- <h1>This is the home page</h1> -->
     <el-button @click="create"><i class="el-icon-plus"></i></el-button>
     <el-button @click="read"><i class="el-icon-refresh"></i></el-button>
     <br /> <br />
