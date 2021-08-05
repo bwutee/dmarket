@@ -1,44 +1,71 @@
 <template>
   <div id="app">
+    <div id="screen">
     <el-row>
-      <el-col :span="21"><div>
-        <h2>{{ location }}</h2>
-        </div></el-col>
-      <el-col :span="3"><div>
-          <el-divider direction="vertical"></el-divider>
-          <el-button>
-          <i class="el-icon-search"></i>
-          </el-button>
-          <el-button>
-          <i class="el-icon-tickets"></i>
-          </el-button>
-          <el-button>
-          <i class="el-icon-bell"></i>
-          </el-button>
-        </div></el-col>
-      <el-divider direction="horizontal"></el-divider>
+      <el-col :span="8" style="margin-top: 15px; margin-left: 15px;">
+        {{location}}
+      </el-col>
+      <el-col :span="8">
+      <div>
+
+        <div style="margin-top: 15px;">
+          <el-input placeholder="동네이름, 물품명등을 검색해보세요!" v-model="input3" class="input-with-select">
+            <template #prepend>
+              <el-select v-model="selectCategory" placeholder="카테고리" >
+                <el-option
+                v-for="category in $store.state.categories"
+                :key="category"
+                :label= category
+                :value= category
+                ></el-option>
+              </el-select>
+            </template>
+            <template #append>
+              <el-button icon="el-icon-search"></el-button>
+            </template>
+          </el-input>
+        </div>
+      </div>
+      </el-col>
     </el-row>
 
-    <!-- <h1>This is the home page</h1> -->
-    <el-button @click="create"><i class="el-icon-plus"></i></el-button>
-    <el-button @click="read"><i class="el-icon-refresh"></i></el-button>
+    <el-button icon="custom-icon el-icon-plus" @click="create" circle></el-button>
+    <el-button icon="custom-icon el-icon-refresh" @click="read" circle></el-button>
     <br /> <br />
 
-    <!-- 상품 목록 카드 -->
-    <div v-for="(product, i) in products" :key="i">
-      <el-row>
-      <el-col :span="23">
-      <span style="font-size: 23px"> {{products[i].title}} </span> <br />
-      <span> location </span> <br />
-      <span style="font-weight: bold"> {{products[i].price}} </span>
-      </el-col>
+<!-- 상품 목록 -->
+  <div class="products">
+   <el-row>
+      <el-col
+      :span="4"
+      v-for="(o, index) in products"
+      :key="o"
+      :offset="index > 0 ? 3 : 3"
+      >
+        <el-card @click="requestProductDetail(products[index].id)" shadow="hover" class="productCard">
 
-      <el-col :span="1">
-      <el-button @click="requestProductDetail(products[i].id)"><i class="el-icon-arrow-right" /></el-button>
+          <el-image
+            style="width: 300px; height: 300px"
+            :src= products[index].image
+            fit= fit
+            class="image"
+          >
+          </el-image>
+
+          <div>
+            <span style="font-size: 17px"> {{products[index].title}} </span> <br>
+            <span style="font-weight: bold; font-size: 20px"> {{convertPrice(products[index].price)}}원 </span>
+
+            <div class="bottom">
+              <time class="time">{{products[index].location}}</time>
+            </div>
+          </div>
+
+        </el-card>
       </el-col>
-      <el-divider></el-divider>
-      </el-row>
-    </div>
+    </el-row>
+  </div>
+  </div>
 
   <v-app>
   </v-app>
@@ -53,13 +80,17 @@ export default {
     return {
       location: '신길제3동',
       products: [],
-      writeCard: false
+      writeCard: false,
+      selectCategory: ''
     }
   },
   created () {
     this.subscribe()
   },
   methods: {
+    convertPrice (price) {
+      return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    },
     async subscribe () {
       db.collection('products').get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
@@ -67,6 +98,8 @@ export default {
             {
               title: doc.data().title,
               price: doc.data().price,
+              image: doc.data().image,
+              location: doc.data().location,
               id: doc.id
             }
           )
@@ -76,7 +109,7 @@ export default {
       })
     },
     create () {
-      if (this.$store.state.fireUser) {
+      if (this.$store.state.user.uid) {
         this.$router.push('createProduct')
       } else {
         this.$notify.error({
@@ -95,11 +128,13 @@ export default {
               {
                 title: doc.data().title,
                 price: doc.data().price,
+                image: doc.data().image,
+                location: doc.data().location,
                 id: doc.id
               }
             )
             // console.log(doc.data())
-            console.log(this.products)
+            // console.log(this.products)
           })
         }).catch((error) => {
           console.error('Error getting documents: ', error)
@@ -116,8 +151,50 @@ export default {
 </script>
 
 <style>
-.centered{
-  left: 50%;
+  #screen{
+    background-color: rgb(240, 242, 246);
+  }
+  .products{
+    margin: auto;
+    width: 70%;
+    background-color: white;
+  }
+  .centered{
+    left: 50%;
+  }
+  .time {
+    font-size: 13px;
+    color: #999;
+  }
 
-}
+  .bottom {
+    margin-top: 13px;
+    line-height: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .button {
+    padding: 0;
+    min-height: auto;
+  }
+
+  .image {
+    width: 100%;
+    display: block;
+  }
+  .el-select .el-input {
+    width: 110px;
+  }
+  .input-with-select .el-input-group__prepend {
+    background-color: #fff;
+  }
+  .custom-icon {
+   font-size: 1.5rem;
+  }
+  .productCard{
+    width: 350px;
+  }
+
 </style>

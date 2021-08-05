@@ -1,17 +1,3 @@
-/* import { createApp } from 'vue'
-import vuetify from './plugins/vuetify'
-import App from './App.vue'
-import router from './router'
-import store from './store'
-
-const app = createApp(App)
-app.use(router)
-app.use(store)
-app.use(vuetify)
-
-app.mount('#app')
-*/
-
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -31,13 +17,29 @@ import 'firebase/auth'
 import 'firebase/firebase-database'
 import firebaseConfig from '../firebaseConfig'
 
+import signInWithGoogle from '@/components/signInWithGoogle.js'
+
 firebase.initializeApp(firebaseConfig)
-firebase.auth().onAuthStateChanged(fu => store.commit('setFireUser', fu))
 
 const app = createApp(App)
 app.use(store)
 app.use(Vuex)
 app.use(router)
 app.use(vuetify)
+app.config.globalProperties.$firestore = firebase.firestore()
 app.use(ElementPlus, { locale })
 app.mount('#app')
+const { signIn } = signInWithGoogle()
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    const loggedIn = async () => {
+      await signIn()
+      if (store.state.user.uid) {
+        if (!store.getters['user/ifLocated']) {
+          router.push('/setLocation')
+        }
+      }
+    }
+    loggedIn()
+  }
+})

@@ -18,12 +18,13 @@
 
     <el-divider></el-divider>
 
-    <div>
-        <el-row>
+    <div class="productCard">
+        <el-row  v-if="loaded">
         <el-image
-            style="width: 100px; height: 100px"
-            :src="url"
-            :fit="fit">
+            style="width: 1000px; height: auto; borderRadius: 6%;"
+            :src= productDetail[0].img
+            :fit= fit
+            >
         </el-image>
         </el-row>
 
@@ -68,8 +69,10 @@ export default {
 
     async subscribe () {
       db.collection('products').doc(this.$store.state.productId).get().then((sn) => {
+        // console.log(sn.data())
         this.productDetail.push(
           {
+            img: sn.data().image,
             title: sn.data().title,
             category: sn.data().category,
             content: sn.data().content,
@@ -77,10 +80,10 @@ export default {
             id: sn.id
           }
         )
-        console.log(this.productDetail)
+        // console.log(this.productDetail)
         this.loaded = true
       }).catch((error) => {
-        console.log('Error getting documents: ', error)
+        console.error('Error getting documents: ', error)
       })
     }
 
@@ -103,5 +106,9 @@ export default {
 .content{
     font-size: 20px;
     margin-bottom: 10px;
+}
+.productCard{
+  margin: auto;
+  width: 50%;
 }
 </style>
