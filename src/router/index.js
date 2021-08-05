@@ -32,6 +32,11 @@ const routes = [
     path: '/productDetail',
     name: 'productDetail',
     component: () => import('../views/productDetail')
+  },
+  {
+    path: '/setLocation',
+    name: 'setLocation',
+    component: () => import('../views/setLocation')
   }
 ]
 
